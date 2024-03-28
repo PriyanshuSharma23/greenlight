@@ -18,7 +18,10 @@ import (
 	_ "github.com/lib/pq"
 )
 
-const version = "1.0.0"
+var (
+	buildTime string
+	version   string
+)
 
 type config struct {
 	env  string
@@ -52,8 +55,6 @@ type application struct {
 	config config
 	wg     sync.WaitGroup
 }
-
-var buildTime string
 
 func main() {
 	var cfg config
