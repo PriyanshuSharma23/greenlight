@@ -98,8 +98,6 @@ DB_PWD := 12345
 DB_DSN := postgres://postgres:12345@greenlight-postgres:5432/greenlight?sslmode=disable
 
 .PHONY: docker/compose/up
-
-# Target to run docker-compose up
 docker/compose/up:
 	@echo "Running docker-compose with environment variables:"
 	@CURRENT_TIME=$(CURRENT_TIME) GIT_DESCRIPTION=$(GIT_DESCRIPTION) DB_PWD=$(DB_PWD) DB_DSN=$(DB_DSN) docker-compose up --build 
