@@ -79,3 +79,33 @@ build/api:
 	@echo "Building binary..."
 	go build -ldflags=${linker_flags} -o=./bin/api ./cmd/api/
 	GOOS=linux GOARCH=amd64 go build -ldflags=${linker_flags} -o=./bin/linux_amd64/api ./cmd/api
+
+.PHONY = docker/build
+docker/build:
+	@echo "Building docker image"
+	docker build \
+		--build-arg CURRENT_TIME=$(current_time) \
+		--build-arg GIT_DESCRIPTION=$(git_description) \
+		--build-arg DB_DSN='postgres://greenlight:pa55word@host.docker.internal:5432/greenlight?sslmode=disable' \
+		--file ./docker/Dockerfile \
+		-t greenlight .
+
+
+# Define environment variables
+CURRENT_TIME := $(shell date -u +"%Y-%m-%dT%H:%M:%SZ")
+GIT_DESCRIPTION := $(shell git describe --always --dirty --tag --long)
+DB_PWD := 12345
+DB_DSN := postgres://postgres:12345@greenlight-postgres:5432/greenlight?sslmode=disable
+
+.PHONY: docker/compose/up
+
+# Target to run docker-compose up
+docker/compose/up:
+	@echo "Running docker-compose with environment variables:"
+	@CURRENT_TIME=$(CURRENT_TIME) GIT_DESCRIPTION=$(GIT_DESCRIPTION) DB_PWD=$(DB_PWD) DB_DSN=$(DB_DSN) docker-compose up --build 
+
+
+.PHONY = docker/compose/down
+docker/compose/down:
+	@echo "Cleaning up Docker containers and images..."
+	@docker-compose down

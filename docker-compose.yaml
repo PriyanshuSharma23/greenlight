@@ -1,0 +1,27 @@
+version: '3.9'
+services:
+  db:
+    image: postgres
+    volumes:
+      - ./migrations/init.sql:/docker-entrypoint-initdb.d/init.sql
+      - pg_data:/var/lib/postgresql
+    shm_size: 128mb
+    container_name: greenlight-postgres
+    environment:
+      POSTGRES_PASSWORD: ${DB_PWD}
+  backend:
+    build: 
+      context: .
+      dockerfile: ./docker/Dockerfile
+      args:
+        CURRENT_TIME: ${CURRENT_TIME}
+        GIT_DESCRIPTION: ${GIT_DESCRIPTION}
+        DB_DSN: ${DB_DSN}
+    depends_on:
+      - db
+    ports:
+      - "4000:4000"
+    container_name: greenlight
+
+volumes:
+  pg_data:
