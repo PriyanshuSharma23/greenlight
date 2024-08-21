@@ -1,0 +1,19 @@
+FROM alpine:3.18
+
+ENV MIGRATE_VERSION=v4.17.1
+ENV OS=linux
+ENV ARCH=amd64
+
+RUN apk --no-cache add curl
+
+# Download and install migrate
+RUN curl -L https://github.com/golang-migrate/migrate/releases/download/${MIGRATE_VERSION}/migrate.${OS}-${ARCH}.tar.gz \
+    | tar xz -C /usr/local/bin
+
+WORKDIR /migrations-dir
+COPY ./migrations .
+
+ARG DB_DSN
+ENV dbDsn=${DB_DSN}
+
+ENTRYPOINT migrate -path=/migrations-dir -database=$dbDsn up

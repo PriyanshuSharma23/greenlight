@@ -9,6 +9,22 @@ services:
     container_name: greenlight-postgres
     environment:
       POSTGRES_PASSWORD: ${DB_PWD}
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready", "-U postgres"]
+      interval: 2s
+      timeout: 5s
+      retries: 5
+
+  backend-migration:
+    build:
+      context: .
+      dockerfile: ./docker/Dockerfile.migrations
+      args:
+        DB_DSN: ${DB_DSN}
+    container_name: backend-migration
+    depends_on:
+      db: 
+        condition: service_healthy
   backend:
     build: 
       context: .
@@ -18,7 +34,8 @@ services:
         GIT_DESCRIPTION: ${GIT_DESCRIPTION}
         DB_DSN: ${DB_DSN}
     depends_on:
-      - db
+      backend-migration:
+        condition: service_completed_successfully
     ports:
       - "4000:4000"
     container_name: greenlight
